@@ -26,7 +26,7 @@ app.use("/api/activity",activityRouter)
 app.use("/api/emargancy",emargancyRouter)
 app.use("/api/token",tokenRouter)
 app.use("/api/auth",authRouter)
-const port = 5000
+const port = 4000
 app.listen(port,()=>{
     console.log("server started",port)
     connectdb()

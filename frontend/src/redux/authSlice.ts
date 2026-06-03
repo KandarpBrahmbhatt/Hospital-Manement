@@ -12,8 +12,9 @@ interface AuthState {
   user: User | null;
 }
 
+const storedUser = localStorage.getItem("user");
 const initialState: AuthState = {
-  user: null,
+  user: storedUser ? JSON.parse(storedUser) : null,
 };
 
 const authSlice = createSlice({

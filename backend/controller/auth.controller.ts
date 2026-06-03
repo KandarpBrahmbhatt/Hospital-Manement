@@ -146,3 +146,21 @@ export const login = async (
         res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };
+
+export const getRoles = async (req: Request, res: Response) => {
+    try {
+        //.select karni ne lakhta only  permistion name show thase
+        const roles = await Role.find().select("name permissions");
+        res.status(200).json({
+            message:"gettingRoles sucessfully",
+            success: true,
+            roles,
+        });
+    } catch (error) {
+        console.log("getRoles Error", error);
+        res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+};

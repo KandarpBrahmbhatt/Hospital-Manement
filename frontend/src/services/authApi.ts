@@ -4,7 +4,7 @@ export const loginApi = (
   data: any
 ) => {
   return api.post(
-    "/login",
+    "/auth/login",
     data
   );
 };
@@ -13,11 +13,15 @@ export const signupApi = (
   data: any
 ) => {
   return api.post(
-    "/signup",
+    "/auth/signup",
     data
   );
 };
 
 export const logoutApi = () => {
   return api.post("/auth/logout");
+};
+
+export const getRolesApi = () => {
+  return api.get("/auth/roles");
 };

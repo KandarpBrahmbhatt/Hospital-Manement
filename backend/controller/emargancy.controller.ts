@@ -25,7 +25,7 @@ export const getEmergencyList = async (req: Request, res: Response) => {
         const limit = Number(req.query.limit) || 10;
         const { status, severity, assignedDoctor } = req.query;
 
-        const filter: any = {};
+        const filter: any = {};     
         if (status) filter.status = status;
         if (severity) filter.severity = severity;
         if (assignedDoctor) filter.assignedDoctor = assignedDoctor;
