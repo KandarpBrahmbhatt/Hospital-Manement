@@ -4,13 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "ts-node --files backend.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.9.1",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
@@ -18,9 +22,13 @@
   },
   "dependencies": {
     "@faker-js/faker": "^10.4.0",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "ioredis": "^5.11.0",
+    "jsonwebtoken": "^9.0.3",
     "mongoos": "^0.0.1-security",
     "mongoose": "^9.6.3",
     "puppeteer": "^25.1.0"

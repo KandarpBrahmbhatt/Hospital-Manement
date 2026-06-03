@@ -1,5 +1,10 @@
 import { Request, Response } from 'express'
 import emaragansyModel from '../models/emaragansy.model'
+import Patient from '../models/patient'
+import Doctor from '../models/Doctor'
+
+// Prevent tree-shaking of model registrations
+const _models = { Patient, Doctor };
 
 export const createEmaragancyEntry = async (req: Request, res: Response) => {
     try {

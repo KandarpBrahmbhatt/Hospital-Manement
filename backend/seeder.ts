@@ -279,9 +279,11 @@ import Doctor from "./models/Doctor.ts";
 import Patient from "./models/patient.ts";
 import Appointment from "./models/appoiment.model.ts";
 import Bill from "./models/bill.ts";
+import Token from "./models/token.model.ts"
+import Role from "./models/roll.model.ts"
 
 const MONGO_URI = "mongodb://localhost:27017/hpm";
-const BATCH_SIZE = 5000;
+const BATCH_SIZE = 25000;
 const TOTAL_PATIENTS = 1000000;
 
 async function seedDepartments() {
@@ -329,7 +331,7 @@ async function seedDoctors(departmentIds: any[]) {
       name: faker.person.fullName(),
       departmentId:
         departmentIds[
-          Math.floor(Math.random() * departmentIds.length)
+        Math.floor(Math.random() * departmentIds.length)
         ],
       consultationFee: faker.number.int({
         min: 300,
@@ -425,16 +427,16 @@ async function seedRelatedData() {
       appointments.push({
         patientId:
           patientPool[
-            Math.floor(
-              Math.random() * patientPool.length
-            )
+          Math.floor(
+            Math.random() * patientPool.length
+          )
           ],
 
         doctorId:
           doctorPool[
-            Math.floor(
-              Math.random() * doctorPool.length
-            )
+          Math.floor(
+            Math.random() * doctorPool.length
+          )
           ],
 
         appointmentDate: faker.date.recent(),
@@ -467,16 +469,16 @@ async function seedRelatedData() {
       bills.push({
         patientId:
           patientPool[
-            Math.floor(
-              Math.random() * patientPool.length
-            )
+          Math.floor(
+            Math.random() * patientPool.length
+          )
           ],
 
         doctorId:
           doctorPool[
-            Math.floor(
-              Math.random() * doctorPool.length
-            )
+          Math.floor(
+            Math.random() * doctorPool.length
+          )
           ],
 
         amount: faker.number.int({
@@ -507,9 +509,9 @@ async function seedRelatedData() {
       activities.push({
         patientId:
           patientPool[
-            Math.floor(
-              Math.random() * patientPool.length
-            )
+          Math.floor(
+            Math.random() * patientPool.length
+          )
           ],
 
         activities: [
@@ -547,16 +549,16 @@ async function seedRelatedData() {
     emergencies.push({
       patientId:
         patientPool[
-          Math.floor(
-            Math.random() * patientPool.length
-          )
+        Math.floor(
+          Math.random() * patientPool.length
+        )
         ],
 
       assignedDoctor:
         doctorPool[
-          Math.floor(
-            Math.random() * doctorPool.length
-          )
+        Math.floor(
+          Math.random() * doctorPool.length
+        )
         ],
 
       severity: faker.helpers.arrayElement([
@@ -591,9 +593,9 @@ async function seedRelatedData() {
     insurances.push({
       patientId:
         patientPool[
-          Math.floor(
-            Math.random() * patientPool.length
-          )
+        Math.floor(
+          Math.random() * patientPool.length
+        )
         ],
 
       providerName: faker.company.name(),
@@ -630,6 +632,120 @@ async function seedRelatedData() {
   }
 }
 
+async function seedRoles () {
+  await Role.deleteMany({});
+
+  await Role.insertMany([
+    {
+      name: "ADMIN",
+      permissions: ["*"],
+    },
+
+    {
+      name: "DOCTOR",
+      permissions: [
+        "patient:view",
+        "appointment:view",
+        "appointment:update",
+        "token:manage",
+      ],
+    },
+
+    {
+      name: "RECEPTIONIST",
+      permissions: [
+        "patient:create",
+        "patient:view",
+        "appointment:create",
+        "token:create",
+      ],
+    },
+
+    {
+      name: "ACCOUNTANT",
+      permissions: [
+        "bill:create",
+        "bill:view",
+      ],
+    },
+  ]);
+};
+
+async function seedTokens() {
+  console.log("Creating Tokens...");
+
+  await Token.deleteMany({});
+
+  const patientIds = await Patient.find()
+    .select("_id")
+    .lean();
+
+  const doctorIds = await Doctor.find()
+    .select("_id")
+    .lean();
+
+  const patientPool = patientIds.map(
+    (p: any) => p._id
+  );
+
+  const doctorPool = doctorIds.map(
+    (d: any) => d._id
+  );
+
+  const TOTAL_TOKENS = 1000000;
+
+  for (
+    let batch = 0;
+    batch < TOTAL_TOKENS;
+    batch += BATCH_SIZE
+  ) {
+    const tokens = [];
+
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      tokens.push({
+        patientId:
+          patientPool[
+          Math.floor(
+            Math.random() * patientPool.length
+          )
+          ],
+
+        doctorId:
+          doctorPool[
+          Math.floor(
+            Math.random() * doctorPool.length
+          )
+          ],
+
+        tokenNumber: batch + i + 1,
+
+        priority: faker.number.int({
+          min: 0,
+          max: 3,
+        }),
+
+        status: faker.helpers.arrayElement([
+          "WAITING",
+          "CALLED",
+          "IN_PROGRESS",
+          "COMPLETED",
+        ]),
+      });
+    }
+
+    await Token.insertMany(tokens, {
+      ordered: false,
+    });
+
+    console.log(
+      `Tokens Inserted : ${Math.min(
+        batch + BATCH_SIZE,
+        TOTAL_TOKENS
+      )}`
+    );
+  }
+}
+
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
@@ -646,7 +762,10 @@ async function seed() {
     await seedPatients();
 
     await seedRelatedData();
+    
+    seedRoles()
 
+    await seedTokens();
     console.log(
       " 10 Lakh Dataset Generated Successfully"
     );

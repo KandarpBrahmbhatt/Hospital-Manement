@@ -1,9 +1,9 @@
 import { Request, Response } from 'express'
 import Appointment from '../models/appoiment.model'
 
-export const createAppoiment = (req: Request, res: Response) => {
+export const createAppoiment = async (req: Request, res: Response) => {
     try {
-        const { doctorId patientId appointmentDate status } = req.body
+        const { doctorId, patientId, appointmentDate, status } = req.body
         console.log(req.body)
 
         if (!doctorId || !patientId || !appointmentDate) {
