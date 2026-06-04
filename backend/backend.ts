@@ -10,6 +10,8 @@ import tokenRouter from "./routes/token.routes"
 import authRouter from "./routes/auth.routes"
 import cookieParser from "cookie-parser";
 import cors from 'cors'
+import appoimentRouter from "./routes/appoiment.route"
+import { startAppointmentReminderJob } from "./cron/AppoimentReminder.cron"
 const app = express()
 
 app.use(express.json())
@@ -26,8 +28,11 @@ app.use("/api/activity",activityRouter)
 app.use("/api/emargancy",emargancyRouter)
 app.use("/api/token",tokenRouter)
 app.use("/api/auth",authRouter)
+app.use("/api/appoiment",appoimentRouter)
+
 const port = 4000
-app.listen(port,()=>{
+app.listen(port, async ()=>{
     console.log("server started",port)
-    connectdb()
+    await connectdb()
+    await startAppointmentReminderJob()
 })

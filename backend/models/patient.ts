@@ -4,6 +4,8 @@ export interface IPatient extends Document {
   name: string;
   age: number;
   gender: string;
+  email:string
+  phone:string
 }
 
 const PatientSchema = new Schema({
