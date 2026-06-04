@@ -4,6 +4,48 @@ import Patient from "../models/patient";
 import { Request, Response } from "express";
 import stripe from "../config/stripe";
 
+import { sendBillEmail } from "../utils/sendMail";
+import { sendBillSMS } from "../utils/sendSMS";
+
+export const createBill = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const {
+      patientId,
+      doctorId,
+      amount,
+    } = req.body;
+
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({
+        message: "Patient not found",
+      });
+    }
+
+    const bill = await Bill.create({
+      patientId,
+      doctorId,
+      amount,
+    });
+    
+    return res.status(201).json({
+      message: "Bill generated and sent successfully",
+      bill,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      message: "Error creating bill",
+    });
+  }
+};
+
+
 export const generateBillPDF = async (req: Request, res: Response) => {
   try {
     const bill = await Bill.findById(req.params.id)
@@ -222,7 +264,7 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
           price_data: {
             currency: "inr",
             product_data: {
-              name: "Order Payment",
+              name: "Bill Payment",
             },
             unit_amount: bill.amount * 100,
           },

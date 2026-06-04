@@ -7,4 +7,5 @@ billRouter.get("/pdf/:id",generateBillPDF)
 billRouter.get("/bill",billListing)
 billRouter.get("/dashboard",dashboard)
 billRouter.post("/create-payment-intent",createPaymentIntent);
+
 export default billRouter

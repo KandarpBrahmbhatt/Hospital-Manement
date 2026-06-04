@@ -5,6 +5,7 @@ export interface IAppointment extends Document {
   patientId: mongoose.Types.ObjectId;
   appointmentDate: Date;
   status: string;
+  reminderSent: boolean;
 }
 
 const AppointmentSchema = new Schema({
@@ -16,16 +17,24 @@ const AppointmentSchema = new Schema({
     type: Schema.Types.ObjectId,
     ref: "Patient",
   },
-  appointmentDate: Date,
+  appointmentDate: {
+    type: Date,
+    required: true,
+  },
   status: {
     type: String,
     enum: ["Completed", "Pending", "Cancelled"],
+    default: "Pending",
+  },
+  reminderSent: {
+    type: Boolean,
+    default: false,
   },
 });
 
-AppointmentSchema.index({patientId:1})
-AppointmentSchema.index({doctorId:1})
-AppointmentSchema.index({appointmentDate:1})
+AppointmentSchema.index({ patientId: 1 })
+AppointmentSchema.index({ doctorId: 1 })
+AppointmentSchema.index({ appointmentDate: 1 })
 export default mongoose.model<IAppointment>(
   "Appointment",
   AppointmentSchema
