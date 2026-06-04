@@ -1,7 +1,51 @@
 import puppeteer from "puppeteer";
 import Bill from "../models/bill";
 import Patient from "../models/patient";
-import { Request,Response } from "express";
+import { Request, Response } from "express";
+import stripe from "../config/stripe";
+
+import { sendBillEmail } from "../utils/sendMail";
+import { sendBillSMS } from "../utils/sendSMS";
+
+export const createBill = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const {
+      patientId,
+      doctorId,
+      amount,
+    } = req.body;
+
+    const patient = await Patient.findById(patientId);
+
+    if (!patient) {
+      return res.status(404).json({
+        message: "Patient not found",
+      });
+    }
+
+    const bill = await Bill.create({
+      patientId,
+      doctorId,
+      amount,
+    });
+    
+    return res.status(201).json({
+      message: "Bill generated and sent successfully",
+      bill,
+    });
+  } catch (error) {
+    console.log(error);
+
+    return res.status(500).json({
+      message: "Error creating bill",
+    });
+  }
+};
+
+
 export const generateBillPDF = async (req: Request, res: Response) => {
   try {
     const bill = await Bill.findById(req.params.id)
@@ -14,7 +58,7 @@ export const generateBillPDF = async (req: Request, res: Response) => {
     }
 
     const patient = bill.patientId as any;
-const html = `
+    const html = `
 <html>
 <head>
   <style>
@@ -169,7 +213,7 @@ const html = `
 </html>
 `;
 
-// means you are starting a Chrome browser using Puppeteer in the background (without UI).
+    // means you are starting a Chrome browser using Puppeteer in the background (without UI).
     const browser = await puppeteer.launch({
       headless: true
     });
@@ -198,3 +242,53 @@ const html = `
     });
   }
 };
+
+
+// create a stripe payment
+export const createPaymentIntent = async (req: Request, res: Response) => {
+  try {
+    const { billId } = req.body;
+
+    const bill = await Bill.findById(billId);
+
+    if (!bill) {
+      return res.status(404).json({ message: "Order not found" });
+    }
+
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      mode: "payment",
+
+      line_items: [
+        {
+          price_data: {
+            currency: "inr",
+            product_data: {
+              name: "Bill Payment",
+            },
+            unit_amount: bill.amount * 100,
+          },
+          quantity: 1,
+        },
+      ],
+
+      success_url: "http://localhost:5173/payment-success",
+      cancel_url: "http://localhost:5173/payment-cancel",
+
+      // metadata is custom data you attach to a Stripe payment session
+      metadata: {
+        billId: bill._id.toString(),
+        // userId: bill.userId.toString(),
+      }
+    });
+
+    return res.status(200).json({
+      url: session.url,
+    });
+
+  } catch (error) {
+    console.log("Stripe Session Error:", error);
+    return res.status(500).json({ message: "Payment error", error });
+  }
+};
+

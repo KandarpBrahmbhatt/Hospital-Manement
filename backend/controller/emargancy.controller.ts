@@ -1,5 +1,10 @@
 import { Request, Response } from 'express'
 import emaragansyModel from '../models/emaragansy.model'
+import Patient from '../models/patient'
+import Doctor from '../models/Doctor'
+
+// Prevent tree-shaking of model registrations
+const _models = { Patient, Doctor };
 
 export const createEmaragancyEntry = async (req: Request, res: Response) => {
     try {
@@ -20,7 +25,7 @@ export const getEmergencyList = async (req: Request, res: Response) => {
         const limit = Number(req.query.limit) || 10;
         const { status, severity, assignedDoctor } = req.query;
 
-        const filter: any = {};
+        const filter: any = {};     
         if (status) filter.status = status;
         if (severity) filter.severity = severity;
         if (assignedDoctor) filter.assignedDoctor = assignedDoctor;
