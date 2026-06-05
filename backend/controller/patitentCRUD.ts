@@ -96,7 +96,7 @@ export const dashboardAnalytics = async (
             // $facet allows multiple aggregations
             // to run in parallel in a single query.
             {
-                $facet: {
+                $facet: {   
 
                     // TOTAL REVENUE
                     totalRevenue: [
