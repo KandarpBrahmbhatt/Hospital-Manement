@@ -31,7 +31,7 @@ export const createBill = async (
       doctorId,
       amount,
     });
-    
+
     return res.status(201).json({
       message: "Bill generated and sent successfully",
       bill,
