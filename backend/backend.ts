@@ -13,6 +13,7 @@ import cors from 'cors'
 import appoimentRouter from "./routes/appoiment.route"
 import { startAppointmentReminderJob } from "./cron/AppoimentReminder.cron"
 import wardRouter from "./routes/ward.routes"
+import medicalRecordRouter from "./routes/medicalRecord.routes"
 const app = express()
 
 app.use(express.json())
@@ -31,7 +32,7 @@ app.use("/api/token",tokenRouter)
 app.use("/api/auth",authRouter)
 app.use("/api/appoiment",appoimentRouter)
 app.use("/api/ward",wardRouter)
-
+app.use("/api/medicalrecord",medicalRecordRouter)
 const port = 4000
 app.listen(port, async ()=>{
     console.log("server started",port)

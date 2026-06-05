@@ -23,13 +23,28 @@ const transport = nodemailer.createTransport({
 
 export default transport
 
-export const sendMail = async (to: string, subject: string, html: string) => {
-    return transport.sendMail({
+export const sendMail = async (
+    to: string,
+    subject: string,
+    html: string,
+    attachmentBuffer?: Buffer | Uint8Array,
+    attachmentName?: string
+) => {
+    const mailOptions: any = {
         from: `Hospital Management <${emailUser}>`,
         to,
         subject,
         html
-    })
+    }
+    if (attachmentBuffer && attachmentName) {
+        mailOptions.attachments = [
+            {
+                filename: attachmentName,
+                content: attachmentBuffer
+            }
+        ]
+    }
+    return transport.sendMail(mailOptions)
 }
 
 export const verifyMailConnection = async () => {

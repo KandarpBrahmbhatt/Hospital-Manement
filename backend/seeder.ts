@@ -281,11 +281,13 @@ import Appointment from "./models/appoiment.model.ts";
 import Bill from "./models/bill.ts";
 import Token from "./models/token.model.ts"
 import Role from "./models/roll.model.ts"
+import Ward from './models/ward.model.ts'
+import User from "./models/user.model.ts"
+import MedicalRecord from './models/medicalRecord.model.ts'
 
 const MONGO_URI = "mongodb://localhost:27017/hpm";
 const BATCH_SIZE = 25000;
 const TOTAL_PATIENTS = 1000000;
-
 async function seedDepartments() {
   console.log("Seeding Departments...");
 
@@ -746,6 +748,207 @@ async function seedTokens() {
   }
 }
 
+async function seedWards() {
+  console.log("Creating Wards...");
+
+  await Ward.deleteMany({});
+
+  const wards = [];
+
+  for (let i = 1; i <= 100; i++) {
+    wards.push({
+      wardName: `Ward-${i}`,
+      wardType: faker.helpers.arrayElement([
+        "General",
+        "Private",
+        "ICU",
+      ]),
+      totalBeds: faker.number.int({
+        min: 10,
+        max: 100,
+      }),
+    });
+  }
+
+  await Ward.insertMany(wards);
+
+  console.log("Wards Created");
+}
+
+async function seedUsers() {
+  console.log("Creating Users...");
+
+  await User.deleteMany({});
+
+  const roles = await Role.find()
+    .select("_id")
+    .lean();
+
+  const rolePool = roles.map(
+    (r: any) => r._id
+  );
+
+  const TOTAL_USERS = 1000000;
+
+  for (
+    let batch = 0;
+    batch < TOTAL_USERS;
+    batch += BATCH_SIZE
+  ) {
+    const users = [];
+
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      users.push({
+        name: faker.person.fullName(),
+        email: `${faker.internet.username()}_${batch}_${i}@gmail.com`,
+        password: "$2b$10$abcdefghijk123456789",
+        roleId:
+          rolePool[
+            Math.floor(
+              Math.random() *
+                rolePool.length
+            )
+          ],
+      });
+    }
+
+    await User.insertMany(users, {
+      ordered: false,
+    });
+
+    console.log(
+      `Users : ${Math.min(
+        batch + BATCH_SIZE,
+        TOTAL_USERS
+      )}`
+    );
+  }
+}
+
+async function seedMedicalRecords() {
+  console.log(
+    "Creating Medical Records..."
+  );
+
+  await MedicalRecord.deleteMany({});
+
+  const patientIds = await Patient.find()
+    .select("_id")
+    .lean();
+
+  const doctorIds = await Doctor.find()
+    .select("_id")
+    .lean();
+
+  const patientPool = patientIds.map(
+    (p: any) => p._id
+  );
+
+  const doctorPool = doctorIds.map(
+    (d: any) => d._id
+  );
+
+  const TOTAL_RECORDS = 1000000;
+
+  for (
+    let batch = 0;
+    batch < TOTAL_RECORDS;
+    batch += BATCH_SIZE
+  ) {
+    const records = [];
+
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      records.push({
+        patientId:
+          patientPool[
+            Math.floor(
+              Math.random() *
+                patientPool.length
+            )
+          ],
+
+        doctorId:
+          doctorPool[
+            Math.floor(
+              Math.random() *
+                doctorPool.length
+            )
+          ],
+
+        diagnosis:
+          faker.helpers.arrayElement([
+            "Diabetes",
+            "Asthma",
+            "Hypertension",
+            "Migraine",
+            "Viral Fever",
+            "Fracture",
+          ]),
+
+        symptoms: [
+          faker.lorem.word(),
+          faker.lorem.word(),
+          faker.lorem.word(),
+        ],
+
+        prescription: [
+          {
+            medicine:
+              faker.helpers.arrayElement([
+                "Paracetamol",
+                "Metformin",
+                "Ibuprofen",
+                "Amoxicillin",
+              ]),
+            dosage: "1 Tablet",
+            duration: "5 Days",
+          },
+        ],
+
+        allergies: [
+          faker.helpers.arrayElement([
+            "Dust",
+            "Milk",
+            "Pollen",
+            "Peanuts",
+            "None",
+          ]),
+        ],
+
+        treatmentNotes:
+          faker.lorem.paragraph(),
+
+        doctorRemarks:
+          faker.lorem.sentence(),
+
+        labReports: [
+          {
+            fileUrl:
+              faker.internet.url(),
+            uploadedAt:
+              faker.date.recent(),
+          },
+        ],
+      });
+    }
+
+    await MedicalRecord.insertMany(
+      records,
+      {
+        ordered: false,
+      }
+    );
+
+    console.log(
+      `Medical Records : ${Math.min(
+        batch + BATCH_SIZE,
+        TOTAL_RECORDS
+      )}`
+    );
+  }
+}
+
+
 async function seed() {
   try {
     await mongoose.connect(MONGO_URI);
@@ -765,7 +968,14 @@ async function seed() {
     
     seedRoles()
 
+     await seedWards();
+
+    await seedUsers();
+
+    await seedMedicalRecords();
+
     await seedTokens();
+
     console.log(
       " 10 Lakh Dataset Generated Successfully"
     );

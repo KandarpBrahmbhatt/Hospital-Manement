@@ -5,7 +5,8 @@
     "rootDir": "./",
     "outDir": "./dist",
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
   "exclude": ["seeder.ts", "node_modules"]
 }

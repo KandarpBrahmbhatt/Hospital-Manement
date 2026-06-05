@@ -1,7 +1,7 @@
 import {v2 as cloudinary} from "cloudinary"
 import fs from 'fs'
 
-const uploadOnCloudinary  = async(filePath)=>{
+const uploadOnCloudinary  = async(filePath: string)=>{
     cloudinary.config({
         cloud_name:process.env.CLOUDINARY_NAME,
         cloud_api_key:process.env.CLOUDINARY_API_KEY,
@@ -13,7 +13,7 @@ const uploadOnCloudinary  = async(filePath)=>{
             return null
         }
 
-        const uploadResult = await cloudinary.uploader.upload(filepath)
+        const uploadResult = await cloudinary.uploader.upload(filePath)
         return uploadResult.secure_url
     } catch (error) {
         console.log("uploadOnCloudinary error",error)
