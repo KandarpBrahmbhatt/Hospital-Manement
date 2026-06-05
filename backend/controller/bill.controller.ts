@@ -292,3 +292,21 @@ export const createPaymentIntent = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllBills = async (req: Request, res: Response) => {
+  try {
+    const bills = await Bill.find()
+      .populate("patientId")
+      .populate("doctorId")
+      .sort({ createdAt: -1 });
+
+    return res.status(200).json(bills);
+  } catch (error) {
+    console.error("getAllBills error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch bills list",
+      error
+    });
+  }
+};
+
