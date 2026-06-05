@@ -7,6 +7,7 @@ const Sidebar = () => {
     { path: "/dashboard", label: "Dashboard", icon: "📊" },
     { path: "/patients", label: "Patients", icon: "👥" },
     { path: "/doctors", label: "Doctors", icon: "🩺" },
+    { path: "/medical-records", label: "Medical Records", icon: "📝" },
     { path: "/appointments", label: "Appointments", icon: "📅" },
     { path: "/bills", label: "Billing", icon: "💳" },
     { path: "/insurance", label: "Insurance", icon: "🛡️" },

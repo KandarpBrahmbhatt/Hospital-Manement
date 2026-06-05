@@ -154,3 +154,24 @@ export const appointmentHistory = async (req: Request, res: Response) => {
     data: appointments
   });
 };
+
+export const getAppointments = async (req: Request, res: Response) => {
+  try {
+    const appointments = await Appointment.find()
+      .populate("patientId")
+      .populate("doctorId")
+      .sort({ appointmentDate: -1 });
+
+    return res.status(200).json({
+      success: true,
+      data: appointments
+    });
+  } catch (error) {
+    console.error("getAppointments error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch appointments",
+      error
+    });
+  }
+};

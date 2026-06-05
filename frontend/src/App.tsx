@@ -15,12 +15,16 @@ import Dashboard from "./pages/dashboard/Dashboard";
 
 import PatientList from "./pages/patient/PatientList";
 import CreatePatient from "./pages/patient/CreatePatient";
+import EditPatient from "./pages/patient/EditPatient";
 
 import DoctorList from "./pages/doctor/DoctorList";
+
+import MedicalRecordList from "./pages/medical-records/MedicalRecordList";
 
 import AppointmentList from "./pages/appointment/AppointmentList";
 
 import BillList from "./pages/billing/BillList";
+import CreateBill from "./pages/billing/CreateBill";
 
 import InsuranceList from "./pages/insurance/InsuranceList";
 
@@ -44,12 +48,16 @@ function App() {
 
         <Route path="/patients" element={<PatientList />} />
         <Route path="/patients/create" element={<CreatePatient />} />
+        <Route path="/patients/edit/:id" element={<EditPatient />} />
 
         <Route path="/doctors" element={<DoctorList />} />
+
+        <Route path="/medical-records" element={<MedicalRecordList />} />
 
         <Route path="/appointments" element={<AppointmentList />} />
 
         <Route path="/bills" element={<BillList />} />
+        <Route path="/bills/create" element={<CreateBill />} />
 
         <Route path="/insurance" element={<InsuranceList />} />
 

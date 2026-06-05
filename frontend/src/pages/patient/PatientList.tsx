@@ -91,6 +91,7 @@ const PatientList = () => {
                       <th className="px-6 py-4">Gender</th>
                       <th className="px-6 py-4">Email</th>
                       <th className="px-6 py-4">Phone</th>
+                      <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-slate-700 text-sm">
@@ -113,6 +114,14 @@ const PatientList = () => {
                         </td>
                         <td className="px-6 py-4 text-slate-500">{patient.email || "N/A"}</td>
                         <td className="px-6 py-4 text-slate-500">{patient.phone || "N/A"}</td>
+                        <td className="px-6 py-4 text-right space-x-2">
+                          <Link
+                            to={`/patients/edit/${patient._id}`}
+                            className="px-3 py-1.5 bg-slate-100 text-slate-700 font-medium rounded-lg hover:bg-slate-200 transition text-xs cursor-pointer inline-block"
+                          >
+                            Edit
+                          </Link>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
