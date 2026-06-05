@@ -4,8 +4,8 @@ import Patient from "../models/patient";
 import { Request, Response } from "express";
 import stripe from "../config/stripe";
 
-import { sendBillEmail } from "../utils/sendMail";
-import { sendBillSMS } from "../utils/sendSMS";
+// import { sendBillEmail } from "../utils/sendMail";
+// import { sendBillSMS } from "../utils/sendSMS";
 
 export const createBill = async (
   req: Request,

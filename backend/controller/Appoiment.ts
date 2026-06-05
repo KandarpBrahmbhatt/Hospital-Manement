@@ -26,7 +26,7 @@ export const createAppoiment = async (req: Request, res: Response) => {
 
     const patient = await Patient.findById(patientId);
     const doctor = await Doctor.findById(doctorId);
-
+    
     if (!patient) {
       return res.status(404).json({
         message: "Patient not found",
