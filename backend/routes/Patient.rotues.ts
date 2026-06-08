@@ -6,7 +6,7 @@ import { authorize, isAuth } from '../middaleware/auth.middleware'
 const patientRouter  = express.Router()
 
 patientRouter.get("/agg",dashboardAnalytics)
-patientRouter.post("/create",isAuth,authorize("patient:create"),createPatient)
+patientRouter.post("/create",createPatient)
 patientRouter.get("/getPatientList", isAuth,authorize("patient:view"),getPatientList)
 patientRouter.get("/:id",getSinglePatient)
 patientRouter.put("/:id",updatePatient)

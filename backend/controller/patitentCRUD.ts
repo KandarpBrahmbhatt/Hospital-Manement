@@ -2,20 +2,22 @@ import { Request, Response } from "express"
 import Patient from "../models/patient"
 import Bill from "../models/bill"
 import redis from "../config/redis"
-
+import { decryptData, encryptData } from '../utiles/AES'
 export const createPatient = async (req: Request, res: Response) => {
     try {
-        const { name, age, gender } = req.body
+        const { name, age, gender, aadhaarNumber, emergencyContact } = req.body
         console.log(req.body)
 
         if (!name || !age || !gender) {
             return res.status(400).json({ message: "all field are required" })
         }
-
+        //  const encrypted = encryptData(data);
         const newpatient = await Patient.create({
             name,
             age,
-            gender
+            gender,
+            aadhaarNumber: encryptData(aadhaarNumber),
+            emergencyContact: encryptData(emergencyContact),
         })
 
         return res.status(200).json({ message: "patient created sucessfully", newpatient })
@@ -61,17 +63,34 @@ export const getPatientList = async (req: Request, res: Response) => {
     }
 }
 
-export const getSinglePatient = async (req: Request, res: Response) => {
-    try {
-        const patient = await Patient.findById(req.params.id)
 
-        return res.status(200).json({ message: "gettingsinglePatient successfully", patient })
+export const getSinglePatient = async (
+    req: Request,
+    res: Response
+) => {
 
-    } catch (error) {
-        console.log("gettingSinglePatient error", error)
-        return res.status(500).json({ message: "getting singlePatient error", error })
+    const patient =
+        await Patient.findById(req.params.id);
+
+    if (!patient) {
+        return res.status(404).json({
+            message: "Patient not found"
+        });
     }
-}
+
+    const response = {
+        ...patient.toObject(),
+
+        aadhaarNumber: decryptData(
+            patient.aadhaarNumber
+        ),
+        emergencyContact: decryptData(
+            patient.emergencyContact
+        )
+    };
+
+    return res.json(response);
+};
 
 export const updatePatient = async (req: Request, res: Response) => {
     try {
@@ -96,7 +115,7 @@ export const dashboardAnalytics = async (
             // $facet allows multiple aggregations
             // to run in parallel in a single query.
             {
-                $facet: {   
+                $facet: {
 
                     // TOTAL REVENUE
                     totalRevenue: [
