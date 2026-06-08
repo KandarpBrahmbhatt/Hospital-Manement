@@ -4,8 +4,10 @@ export interface IPatient extends Document {
   name: string;
   age: number;
   gender: string;
-  email:string
-  phone:string
+  email: string
+  phone: string,
+  aadhaarNumber: string,
+  emergencyContact: string,
 }
 
 const PatientSchema = new Schema({
@@ -15,6 +17,9 @@ const PatientSchema = new Schema({
 
   email: String,
   phone: String,
+
+  aadhaarNumber: String,
+  emergencyContact: String,
 
   insurance: {
     hasInsurance: { type: Boolean, default: false },
