@@ -2,6 +2,9 @@ import { Request, Response } from 'express'
 import emaragansyModel from '../models/emaragansy.model'
 import Patient from '../models/patient'
 import Doctor from '../models/Doctor'
+// Change: Import Notification model and Socket.io server instance
+import Notification from '../models/notification.model'
+import { io } from '../backend'
 
 // Prevent tree-shaking of model registrations
 const _models = { Patient, Doctor };
@@ -11,6 +14,17 @@ export const createEmaragancyEntry = async (req: Request, res: Response) => {
         const emargancy = await emaragansyModel.create(
             req.body
         )
+
+        // Change: Create a system-wide emergency alert notification in the database
+        const notification = await Notification.create({
+            title: "Emergency Alert!",
+            message: `Emergency reported: ${emargancy.severity} severity. Reason: ${emargancy.reason || 'Not specified'}.`,
+            notificationtype: "SYSTEM",
+            isRead: false
+        });
+
+        // Change: Broadcast the emergency notification to all connected clients via WebSockets
+        io.emit("newNotification", notification);
 
         return res.status(200).json({ message: "createEmaragancyEntry sucessfully", emargancy })
     } catch (error) {

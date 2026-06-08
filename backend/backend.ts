@@ -15,12 +15,34 @@ import { startAppointmentReminderJob } from "./cron/AppoimentReminder.cron"
 import wardRouter from "./routes/ward.routes"
 import medicalRecordRouter from "./routes/medicalRecord.routes"
 import socialRouter from "./routes/socialAuth.routes"
+// Import notification router to handle notification APIs
+import notificationRouter from "./routes/notification.routes"
 
 // Import passport and its configuration to register the authentication strategies
 import passport from "passport"
 import "./config/passport"
 
+import http from 'http'
+import {Server} from "socket.io"
+
 const app = express()
+const server = http.createServer(app)
+
+//web socket mate
+// Web socket server setup with specific CORS configuration to support credentials
+export const io = new Server(server, {
+  cors: {
+    origin: ["http://localhost:5173", "http://localhost:5174"],
+    credentials: true,
+  },
+});
+io.on("connection", (socket) => {
+    console.log("Client Connected:", socket.id);
+
+    socket.on("disconnect", () => {
+        console.log("Client Disconnected:", socket.id);
+    });
+});
 
 app.use(express.json())
 app.use(cookieParser());
@@ -44,9 +66,20 @@ app.use("/api/ward",wardRouter)
 app.use("/api/medicalrecord",medicalRecordRouter)
 // Register social router under /api/social to match the passport callback URL
 app.use("/api/social",socialRouter)
+// Register notification router under /api/notifications
+app.use("/api/notifications", notificationRouter)
 const port = 5000
-app.listen(port, async ()=>{
-    console.log("server started",port)
-    await connectdb()
-    await startAppointmentReminderJob()
-})
+
+// app.listen(port, async ()=>{
+//     console.log("server started",port)
+//     await connectdb()
+//     await startAppointmentReminderJob()
+// })
+
+// websocket mate 
+server.listen(port, async () => {
+    console.log("server started", port);
+
+    await connectdb();
+    await startAppointmentReminderJob();
+});

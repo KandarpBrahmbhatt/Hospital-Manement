@@ -5,6 +5,7 @@ import Patient from '../models/patient'
 import Doctor from '../models/Doctor';
 import Notification from '../models/notification.model';
 import { sendSMS } from '../service/sms.service';
+import { io } from '../backend';
 
 export const createAppoiment = async (req: Request, res: Response) => {
   try {
@@ -26,7 +27,7 @@ export const createAppoiment = async (req: Request, res: Response) => {
 
     const patient = await Patient.findById(patientId);
     const doctor = await Doctor.findById(doctorId);
-    
+
     if (!patient) {
       return res.status(404).json({
         message: "Patient not found",
@@ -55,18 +56,30 @@ export const createAppoiment = async (req: Request, res: Response) => {
     // await sendSMS(phoneNumber, "Appointment Booked Successfully");
 
     // if (patient?.phone) {
-      await sendSMS(
-        phoneNumber,
-        `Appointment Booked Successfully
+    await sendSMS(
+      phoneNumber,
+      `Appointment Booked Successfully
          Doctor:${doctor?.name}
          Date: ${new Date(appointment.appointmentDate).toLocaleString()}`
-      );
+    );
     // }
 
-    await Notification.create({
+    // Change: Create a more descriptive notification in the database for the user interface
+    const notification = await Notification.create({
       userId: patient._id,
       title: "Appointment Confirmed",
-      message: "Your appointment has been booked",
+      message: `Appointment booked successfully for Patient: ${patient.name} with Dr. ${doctor.name} on ${parsedAppointmentDate.toLocaleString()}`,
+      notificationtype: "SYSTEM",
+      isRead: false
+    });
+
+    // Change: Emit general newNotification event to broadcast the notification in real-time to all connected users
+    io.emit("newNotification", notification);
+
+    // websocket live time notification send karvam ate use thay 6e.
+    io.emit("newAppointment", {
+      message: "New appointment booked",
+      appointment
     });
 
     //appoiment book no mail send karvamate lakhiyu 6e and and nu nodemail ni configration config folder ma mail.ts file ma kariyu 6e.

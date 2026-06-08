@@ -1,7 +1,8 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "http://localhost:4000/api",
+  // Change: Set port to 5000 to connect to the backend server
+  baseURL: "http://localhost:5000/api",
 
   withCredentials: true,
 

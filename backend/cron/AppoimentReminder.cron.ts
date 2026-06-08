@@ -4,6 +4,8 @@ import Notification from "../models/notification.model";
 import Patient from "../models/patient";
 import Doctor from "../models/Doctor";
 import { sendMail, verifyMailConnection } from "../config/mail";
+// Change: Import the Socket.io server instance to send reminders in real-time
+import { io } from "../backend";
 
 //reminder mail send karva mate cron scheduler no use kariyo 6e.
 export const startAppointmentReminderJob = async () => {
@@ -16,7 +18,7 @@ export const startAppointmentReminderJob = async () => {
   }
 
   // Every 10 seconds
-  cron.schedule("*/24 * * * *", async () => {
+  cron.schedule("* */24 * * *", async () => {
     try {
       console.log("Running appointment reminder job...");
 
@@ -76,14 +78,19 @@ export const startAppointmentReminderJob = async () => {
             `Email sent to ${patient.email} | Message ID: ${mailInfo.messageId}`
           );
 
-          await Notification.create({
+          // Change: Save notification and store reference to emit via WebSockets
+          const notification = await Notification.create({
             userId: appointment.patientId,
             title: "Appointment Reminder",
             message: `Appointment reminder sent for ${new Date(
               appointment.appointmentDate
-            ).toLocaleString()}`,
-            // type: "EMAIL",
+            ).toLocaleString()} (Email sent to ${patient.email})`,
+            notificationtype: "SYSTEM", // Fix/align notification type
+            isRead: false
           });
+
+          // Change: Emit the reminder notification to connected clients
+          io.emit("newNotification", notification);
         } catch (appointmentError) {
           console.log(
             "Appointment Processing Error:",
