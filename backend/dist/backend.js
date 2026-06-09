@@ -3,6 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.io = void 0;
 const express_1 = __importDefault(require("express"));
 const biil_routes_1 = __importDefault(require("./routes/biil.routes"));
 const db_1 = __importDefault(require("./config/db"));
@@ -20,10 +21,35 @@ const AppoimentReminder_cron_1 = require("./cron/AppoimentReminder.cron");
 const ward_routes_1 = __importDefault(require("./routes/ward.routes"));
 const medicalRecord_routes_1 = __importDefault(require("./routes/medicalRecord.routes"));
 const socialAuth_routes_1 = __importDefault(require("./routes/socialAuth.routes"));
+// Import notification router to handle notification APIs
+const notification_routes_1 = __importDefault(require("./routes/notification.routes"));
 // Import passport and its configuration to register the authentication strategies
 const passport_1 = __importDefault(require("passport"));
 require("./config/passport");
+const http_1 = __importDefault(require("http"));
+const socket_io_1 = require("socket.io");
 const app = (0, express_1.default)();
+const server = http_1.default.createServer(app);
+app.get("/", (req, res) => {
+    res.send(`Worker ${process.pid}`);
+});
+// app.listen(5000, () => {
+// console.log(`Worker running ${process.pid}`);
+// });
+//web socket mate
+// Web socket server setup with specific CORS configuration to support credentials
+exports.io = new socket_io_1.Server(server, {
+    cors: {
+        origin: ["http://localhost:5173", "http://localhost:5174"],
+        credentials: true,
+    },
+});
+exports.io.on("connection", (socket) => {
+    console.log("Client Connected:", socket.id);
+    socket.on("disconnect", () => {
+        console.log("Client Disconnected:", socket.id);
+    });
+});
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use((0, cors_1.default)({
@@ -45,9 +71,18 @@ app.use("/api/ward", ward_routes_1.default);
 app.use("/api/medicalrecord", medicalRecord_routes_1.default);
 // Register social router under /api/social to match the passport callback URL
 app.use("/api/social", socialAuth_routes_1.default);
+// Register notification router under /api/notifications
+app.use("/api/notifications", notification_routes_1.default);
 const port = 5000;
-app.listen(port, async () => {
+// app.listen(port, async ()=>{
+//     console.log("server started",port)
+//     await connectdb()
+//     await startAppointmentReminderJob()
+// })
+// websocket mate 
+server.listen(port, async () => {
     console.log("server started", port);
+    console.log(`Worker running ${process.pid}`);
     await (0, db_1.default)();
     await (0, AppoimentReminder_cron_1.startAppointmentReminderJob)();
 });

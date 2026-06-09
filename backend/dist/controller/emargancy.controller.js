@@ -7,11 +7,23 @@ exports.getEmergencyStats = exports.deleteEmergency = exports.updateEmergency = 
 const emaragansy_model_1 = __importDefault(require("../models/emaragansy.model"));
 const patient_1 = __importDefault(require("../models/patient"));
 const Doctor_1 = __importDefault(require("../models/Doctor"));
+// Change: Import Notification model and Socket.io server instance
+const notification_model_1 = __importDefault(require("../models/notification.model"));
+const backend_1 = require("../backend");
 // Prevent tree-shaking of model registrations
 const _models = { Patient: patient_1.default, Doctor: Doctor_1.default };
 const createEmaragancyEntry = async (req, res) => {
     try {
         const emargancy = await emaragansy_model_1.default.create(req.body);
+        // Change: Create a system-wide emergency alert notification in the database
+        const notification = await notification_model_1.default.create({
+            title: "Emergency Alert!",
+            message: `Emergency reported: ${emargancy.severity} severity. Reason: ${emargancy.reason || 'Not specified'}.`,
+            notificationtype: "SYSTEM",
+            isRead: false
+        });
+        // Change: Broadcast the emergency notification to all connected clients via WebSockets
+        backend_1.io.emit("newNotification", notification);
         return res.status(200).json({ message: "createEmaragancyEntry sucessfully", emargancy });
     }
     catch (error) {

@@ -32,31 +32,33 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-const mongoose_1 = __importStar(require("mongoose"));
-const notificationSchema = new mongoose_1.Schema({
-    // Change 3: Made userId optional by removing required: true so that general notifications don't fail schema validation.
-    userId: {
-        type: mongoose_1.Schema.Types.ObjectId,
-        ref: "User",
-        required: false,
-    },
-    title: {
-        type: String
-    },
-    message: {
-        type: String
-    },
-    notificationtype: {
-        type: String,
-        enum: ["EMAIL", "SMS", "SYSTEM"]
-    },
-    isRead: {
-        type: Boolean,
-        default: false
-    },
-}, {
-    timestamps: true
-});
-const Notification = mongoose_1.default.model("Notification", notificationSchema);
-exports.default = Notification;
+const cluster_1 = __importDefault(require("cluster"));
+const os_1 = __importDefault(require("os"));
+// Get total number of CPU cores available on the system
+const totalCPUs = os_1.default.cpus().length;
+console.log("totalCPUs is : ", totalCPUs);
+if (cluster_1.default.isPrimary) {
+    console.log("cluster is primary running ");
+    console.log(`master process ${process.pid}`);
+    // Fork workers
+    // CORRECTED: Changed loop bound from i <= totalCPUs to i < totalCPUs.
+    // If totalCPUs is 4, i <= 4 runs 5 times (0, 1, 2, 3, 4), which forks 5 processes.
+    // Changing to i < totalCPUs forks exactly 4 processes, matching the CPU cores.
+    for (let i = 0; i < totalCPUs; i++) {
+        cluster_1.default.fork(); // jetala cpu hase aetali var run thase.
+    }
+    // ADDED: Auto-restart handler. If a worker process exits/crashes, we fork a new one
+    // to maintain the same number of active workers.
+    cluster_1.default.on("exit", (worker, code, signal) => {
+        console.log(`Worker process ${worker.process.pid} exited with code ${code} (signal: ${signal}). Spawning a new worker...`);
+        cluster_1.default.fork();
+    });
+}
+else {
+    // Worker processes import and run the main Express application
+    Promise.resolve().then(() => __importStar(require("../backend")));
+}

@@ -5,4 +5,5 @@ const activityRouter  = express.Router()
 
 activityRouter.post("/createActivity",createPatientActivity)
 activityRouter.get("/:patientId",patientTimeline);
+
 export default activityRouter

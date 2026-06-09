@@ -3,6 +3,7 @@ import User from "../models/user.model";
 import Role from "../models/roll.model";
 import { Request, Response } from 'express'
 import { genToken } from "../config/token";
+import { emailQueue } from "../queues/email.queues";
 /*
 User Signup
     ↓
@@ -44,6 +45,12 @@ export const signup = async (req: Request, res: Response) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Save user to DB
+
+        await emailQueue.add("welcome-email", {
+            email,
+        });
 
         const user = await User.create({
             name,
@@ -152,7 +159,7 @@ export const getRoles = async (req: Request, res: Response) => {
         //.select karni ne lakhta only  permistion name show thase
         const roles = await Role.find().select("name permissions");
         res.status(200).json({
-            message:"gettingRoles sucessfully",
+            message: "gettingRoles sucessfully",
             success: true,
             roles,
         });

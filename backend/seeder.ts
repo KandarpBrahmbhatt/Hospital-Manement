@@ -1,289 +1,23 @@
-// import mongoose from "mongoose";
-// import { faker } from "@faker-js/faker";
-
-// import Department from "./models/department.ts";
-// import Doctor from "./models/Doctor.ts";
-// import Patient from "./models/patient.ts";
-// import Appointment from "./models/appoiment.model.js";
-// import Bill from "./models/bill.ts";
-
-// const MONGO_URI =
-//   "mongodb://localhost:27017/hpm";
-
-// const BATCH_SIZE = 5000;
-
-// async function connectDB() {
-//   await mongoose.connect(MONGO_URI);
-//   console.log("MongoDB Connected");
-// }
-
-// async function clearDatabase() {
-//   console.log("Deleting old data...");
-
-//   await Promise.all([
-//     Department.deleteMany({}),
-//     Doctor.deleteMany({}),
-//     Patient.deleteMany({}),
-//     Appointment.deleteMany({}),
-//     Bill.deleteMany({}),
-//   ]);
-
-//   console.log("Old data deleted");
-// }
-
-// async function seedDepartments() {
-//   const departments = [
-//     "Cardiology",
-//     "Neurology",
-//     "Orthopedics",
-//     "Dermatology",
-//     "Pediatrics",
-//     "Oncology",
-//     "ENT",
-//     "Radiology",
-//     "Psychiatry",
-//     "General Medicine",
-//   ];
-
-//   const docs = departments.map((name) => ({ name }));
-
-//   return await Department.insertMany(docs);
-// }
-
-// async function seedDoctors(departments: any[]) {
-//   const doctors = [];
-
-//   for (let i = 0; i < 100; i++) {
-//     doctors.push({
-//       name: faker.person.fullName(),
-//       consultationFee: faker.number.int({
-//         min: 500,
-//         max: 3000,
-//       }),
-//       departmentId:
-//         departments[
-//           faker.number.int({
-//             min: 0,
-//             max: departments.length - 1,
-//           })
-//         ]._id,
-//     });
-//   }
-
-//   return await Doctor.insertMany(doctors);
-// }
-
-// async function seedPatients() {
-//   console.log("Creating Patients...");
-
-//   let insertedPatients: any[] = [];
-
-//   for (let batch = 0; batch < 100000; batch += BATCH_SIZE) {
-//     const patients = [];
-
-//     for (let i = 0; i < BATCH_SIZE; i++) {
-//       patients.push({
-//         name: faker.person.fullName(),
-//         age: faker.number.int({
-//           min: 1,
-//           max: 90,
-//         }),
-//         gender:
-//           faker.helpers.arrayElement([
-//             "Male",
-//             "Female",
-//           ]),
-//       });
-//     }
-
-//     const result = await Patient.insertMany(patients);
-
-//     insertedPatients.push(...result);
-
-//     console.log(
-//       `Patients Inserted: ${insertedPatients.length}`
-//     );
-//   }
-
-//   return insertedPatients;
-// }
-
-// async function seedAppointments(
-//   doctors: any[],
-//   patients: any[]
-// ) {
-//   console.log("Creating Appointments...");
-
-//   for (
-//     let batch = 0;
-//     batch < 500000;
-//     batch += BATCH_SIZE
-//   ) {
-//     const appointments = [];
-
-//     for (let i = 0; i < BATCH_SIZE; i++) {
-//       appointments.push({
-//         doctorId:
-//           doctors[
-//             faker.number.int({
-//               min: 0,
-//               max: doctors.length - 1,
-//             })
-//           ]._id,
-
-//         patientId:
-//           patients[
-//             faker.number.int({
-//               min: 0,
-//               max: patients.length - 1,
-//             })
-//           ]._id,
-
-//         appointmentDate: faker.date.recent({
-//           days: 365,
-//         }),
-
-//         status: faker.helpers.arrayElement([
-//           "Completed",
-//           "Pending",
-//           "Cancelled",
-//         ]),
-//       });
-//     }
-
-//     await Appointment.insertMany(appointments);
-
-//     console.log(
-//       `Appointments Inserted: ${batch + BATCH_SIZE}`
-//     );
-//   }
-// }
-
-// async function seedBills(
-//   doctors: any[],
-//   patients: any[]
-// ) {
-//   console.log("Creating Bills...");
-
-//   for (
-//     let batch = 0;
-//     batch < 500000;
-//     batch += BATCH_SIZE
-//   ) {
-//     const bills = [];
-
-//     for (let i = 0; i < BATCH_SIZE; i++) {
-//       bills.push({
-//         doctorId:
-//           doctors[
-//             faker.number.int({
-//               min: 0,
-//               max: doctors.length - 1,
-//             })
-//           ]._id,
-
-//         patientId:
-//           patients[
-//             faker.number.int({
-//               min: 0,
-//               max: patients.length - 1,
-//             })
-//           ]._id,
-
-//         amount: faker.number.int({
-//           min: 1000,
-//           max: 50000,
-//         }),
-
-//         createdAt: faker.date.recent({
-//           days: 365,
-//         }),
-//       });
-//     }
-
-//     await Bill.insertMany(bills);
-
-//     console.log(
-//       `Bills Inserted: ${batch + BATCH_SIZE}`
-//     );
-//   }
-// }
-
-// async function seed() {
-//   try {
-//     await connectDB();
-
-//     await clearDatabase();
-
-//     const departments =
-//       await seedDepartments();
-
-//     console.log(
-//       "Departments:",
-//       departments.length
-//     );
-
-//     const doctors =
-//       await seedDoctors(departments);
-
-//     console.log(
-//       "Doctors:",
-//       doctors.length
-//     );
-
-//     const patients =
-//       await seedPatients();
-
-//     console.log(
-//       "Patients:",
-//       patients.length
-//     );
-
-//     await seedAppointments(
-//       doctors,
-//       patients
-//     );
-
-//     await seedBills(
-//       doctors,
-//       patients
-//     );
-
-//     console.log(
-//       "Hospital Seeder Completed"
-//     );
-
-//     process.exit(0);
-//   } catch (error) {
-//     console.error(error);
-//     process.exit(1);
-//   }
-// }
-
-// seed();
-
-
-
-
-
 import mongoose from "mongoose";
 import { faker } from "@faker-js/faker";
 
 
-import Activity from "./models/activity.model.ts";
-import Emergency from "./models/emaragansy.model.ts";
-import Insurance from "./models/insuarance.model.ts";
+import Activity from "./models/activity.model";
+import Emergency from "./models/emaragansy.model";
+import Insurance from "./models/insuarance.model";
 
-import Department from "./models/department.ts";
-import Doctor from "./models/Doctor.ts";
-import Patient from "./models/patient.ts";
-import Appointment from "./models/appoiment.model.ts";
-import Bill from "./models/bill.ts";
-import Token from "./models/token.model.ts"
-import Role from "./models/roll.model.ts"
-import Ward from './models/ward.model.ts'
-import User from "./models/user.model.ts"
-import MedicalRecord from './models/medicalRecord.model.ts'
+import Department from "./models/department";
+import Doctor from "./models/Doctor";
+import Patient from "./models/patient";
+import Appointment from "./models/appoiment.model";
+import Bill from "./models/bill";
+import Token from "./models/token.model"
+import Role from "./models/roll.model"
+import Ward from './models/ward.model'
+import User from "./models/user.model"
+import MedicalRecord from './models/medicalRecord.model'
+import { encryptData } from "./utiles/AES";
+import process from "node:process";
 
 const MONGO_URI = "mongodb://localhost:27017/hpm";
 const BATCH_SIZE = 25000;
@@ -345,6 +79,57 @@ async function seedDoctors(departmentIds: any[]) {
   return Doctor.insertMany(doctors);
 }
 
+// async function seedPatients() {
+//   console.log("Seeding Patients...");
+
+//   await Patient.deleteMany({});
+
+//   for (
+//     let batch = 0;
+//     batch < TOTAL_PATIENTS;
+//     batch += BATCH_SIZE
+//   ) {
+//     const patients = [];
+
+//     for (let i = 0; i < BATCH_SIZE; i++) {
+//       patients.push({
+//         name: faker.person.fullName(),
+//         age: faker.number.int({
+//           min: 1,
+//           max: 90,
+//         }),
+//         gender: faker.helpers.arrayElement([
+//           "Male",
+//           "Female",
+//           "Other",
+//         ]),
+//         email: faker.internet.email(),
+//         phone: faker.string.numeric(10),
+
+//         insurance: {
+//           hasInsurance: faker.datatype.boolean(),
+//           providerName: faker.company.name(),
+//           policyNumber: faker.string.alphanumeric(12),
+//           coverageLimit: faker.number.int({
+//             min: 50000,
+//             max: 500000,
+//           }),
+//           validTill: faker.date.future(),
+//         },
+//       });
+//     }
+
+//     await Patient.insertMany(patients);
+
+//     console.log(
+//       `Patients Inserted : ${Math.min(
+//         batch + BATCH_SIZE,
+//         TOTAL_PATIENTS
+//       )}`
+//     );
+//   }
+// }
+
 async function seedPatients() {
   console.log("Seeding Patients...");
 
@@ -358,34 +143,67 @@ async function seedPatients() {
     const patients = [];
 
     for (let i = 0; i < BATCH_SIZE; i++) {
+
+      const aadhaarNumber =
+        faker.string.numeric(12);
+
+      const emergencyContact =
+        faker.string.numeric(10);
+
       patients.push({
         name: faker.person.fullName(),
+
         age: faker.number.int({
           min: 1,
           max: 90,
         }),
+
         gender: faker.helpers.arrayElement([
           "Male",
           "Female",
           "Other",
         ]),
-        email: faker.internet.email(),
+
+        email: `${faker.internet.username()}_${batch}_${i}@gmail.com`,
+
         phone: faker.string.numeric(10),
 
+        aadhaarNumber: encryptData(
+          aadhaarNumber
+        ),
+
+        emergencyContact: encryptData(
+          emergencyContact
+        ),
+
         insurance: {
-          hasInsurance: faker.datatype.boolean(),
-          providerName: faker.company.name(),
-          policyNumber: faker.string.alphanumeric(12),
-          coverageLimit: faker.number.int({
-            min: 50000,
-            max: 500000,
-          }),
-          validTill: faker.date.future(),
+          hasInsurance:
+            faker.datatype.boolean(),
+
+          providerName:
+            faker.company.name(),
+
+          policyNumber:
+            faker.string.alphanumeric(12),
+
+          coverageLimit:
+            faker.number.int({
+              min: 50000,
+              max: 500000,
+            }),
+
+          validTill:
+            faker.date.future(),
         },
       });
     }
 
-    await Patient.insertMany(patients);
+    await Patient.insertMany(
+      patients,
+      {
+        ordered: false,
+      }
+    );
 
     console.log(
       `Patients Inserted : ${Math.min(
@@ -394,6 +212,10 @@ async function seedPatients() {
       )}`
     );
   }
+
+  console.log(
+    "Patients Created Successfully"
+  );
 }
 
 async function seedRelatedData() {

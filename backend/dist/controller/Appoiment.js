@@ -10,6 +10,7 @@ const patient_1 = __importDefault(require("../models/patient"));
 const Doctor_1 = __importDefault(require("../models/Doctor"));
 const notification_model_1 = __importDefault(require("../models/notification.model"));
 const sms_service_1 = require("../service/sms.service");
+const backend_1 = require("../backend");
 const createAppoiment = async (req, res) => {
     try {
         const { doctorId, patientId, appointmentDate, status } = req.body;
@@ -54,10 +55,20 @@ const createAppoiment = async (req, res) => {
          Doctor:${doctor?.name}
          Date: ${new Date(appointment.appointmentDate).toLocaleString()}`);
         // }
-        await notification_model_1.default.create({
+        // Change: Create a more descriptive notification in the database for the user interface
+        const notification = await notification_model_1.default.create({
             userId: patient._id,
             title: "Appointment Confirmed",
-            message: "Your appointment has been booked",
+            message: `Appointment booked successfully for Patient: ${patient.name} with Dr. ${doctor.name} on ${parsedAppointmentDate.toLocaleString()}`,
+            notificationtype: "SYSTEM",
+            isRead: false
+        });
+        // Change: Emit general newNotification event to broadcast the notification in real-time to all connected users
+        backend_1.io.emit("newNotification", notification);
+        // websocket live time notification send karvam ate use thay 6e.
+        backend_1.io.emit("newAppointment", {
+            message: "New appointment booked",
+            appointment
         });
         //appoiment book no mail send karvamate lakhiyu 6e and and nu nodemail ni configration config folder ma mail.ts file ma kariyu 6e.
         if (patient.email) {

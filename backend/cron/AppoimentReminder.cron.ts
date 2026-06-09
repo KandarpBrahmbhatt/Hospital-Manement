@@ -18,7 +18,9 @@ export const startAppointmentReminderJob = async () => {
   }
 
   // Every 10 seconds
-  cron.schedule("* */24 * * *", async () => {
+  // CORRECTED: Changed from "* * * * */24" to "*/10 * * * * *" because node-cron supports seconds as the first (6th optional) field,
+  // and the previous pattern was invalid because the day-of-week step "/24" is out of the valid range (0-6).
+  cron.schedule("*/10 * * * * *", async () => {
     try {
       console.log("Running appointment reminder job...");
 

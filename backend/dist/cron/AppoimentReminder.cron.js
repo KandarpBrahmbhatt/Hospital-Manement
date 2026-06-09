@@ -10,6 +10,8 @@ const notification_model_1 = __importDefault(require("../models/notification.mod
 const patient_1 = __importDefault(require("../models/patient"));
 const Doctor_1 = __importDefault(require("../models/Doctor"));
 const mail_1 = require("../config/mail");
+// Change: Import the Socket.io server instance to send reminders in real-time
+const backend_1 = require("../backend");
 //reminder mail send karva mate cron scheduler no use kariyo 6e.
 const startAppointmentReminderJob = async () => {
     try {
@@ -21,7 +23,9 @@ const startAppointmentReminderJob = async () => {
         return;
     }
     // Every 10 seconds
-    node_cron_1.default.schedule("*/24 * * * *", async () => {
+    // CORRECTED: Changed from "* * * * */24" to "*/10 * * * * *" because node-cron supports seconds as the first (6th optional) field,
+    // and the previous pattern was invalid because the day-of-week step "/24" is out of the valid range (0-6).
+    node_cron_1.default.schedule("*/10 * * * * *", async () => {
         try {
             console.log("Running appointment reminder job...");
             const appointments = await appoiment_model_1.default.find({
@@ -54,12 +58,16 @@ const startAppointmentReminderJob = async () => {
             <p>Please arrive 10 minutes early.</p>
             `);
                     console.log(`Email sent to ${patient.email} | Message ID: ${mailInfo.messageId}`);
-                    await notification_model_1.default.create({
+                    // Change: Save notification and store reference to emit via WebSockets
+                    const notification = await notification_model_1.default.create({
                         userId: appointment.patientId,
                         title: "Appointment Reminder",
-                        message: `Appointment reminder sent for ${new Date(appointment.appointmentDate).toLocaleString()}`,
-                        // type: "EMAIL",
+                        message: `Appointment reminder sent for ${new Date(appointment.appointmentDate).toLocaleString()} (Email sent to ${patient.email})`,
+                        notificationtype: "SYSTEM", // Fix/align notification type
+                        isRead: false
                     });
+                    // Change: Emit the reminder notification to connected clients
+                    backend_1.io.emit("newNotification", notification);
                 }
                 catch (appointmentError) {
                     console.log("Appointment Processing Error:", appointmentError);
